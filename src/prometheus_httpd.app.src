@@ -1,0 +1,24 @@
+{application, prometheus_httpd,
+ [{description, "Prometheus.io inets httpd exporter"},
+  {vsn, "1.0.0"},
+  {registered, []},
+  {applications,
+   [kernel,
+    stdlib,
+    inets,
+    prometheus
+   ]},
+  {env,[]},
+  {modules, []},
+
+  {description, "Expose Prometheus metrics using inets httpd."},
+  {maintainers, ["Ilya Khaprov"]},
+  {licenses, ["MIT"]},
+  {links, [{"Github", "https://github.com/deadtrickster/prometheus.erl"},
+           {"Prometheus", "https://hex.pm/packages/prometheus"},
+           {"Prometheus.ex", "https://hex.pm/packages/prometheus_ex"},
+           {"Ecto Instrumenter", "https://hex.pm/packages/prometheus_ecto"},
+           {"Phoenix Instrumenter", "https://hex.pm/packages/prometheus_phoenix"},
+           {"Plugs Instrumenter/Exporter", "https://hex.pm/packages/prometheus_plugs"},
+           {"Process info Collector", "https://hex.pm/packages/prometheus_process_collector"}]}
+ ]}.
