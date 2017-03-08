@@ -1,3 +1,40 @@
+%% @doc
+%% Exports Prometheus metrics via configurable endpoint.
+%%
+%% ### Existing httpd:<br/>
+%% <pre lang="erlang">
+%% {modules, [
+%%    ...
+%%    prometheus_httpd
+%%    ...
+%% ]},
+%% </pre>
+%%
+%% ### Built-in httpd instance:<br/>
+%% <pre lang="erlang">
+%%   prometheus_httpd:start()
+%% </pre>
+%%
+%% ### Telemetry metrics
+%%
+%% - `telemetry_scrape_duration_seconds'
+%% - `telemetry_scrape_size_bytes'
+%% - `telemetry_scrape_encoded_size_bytes'
+%%
+%% ### Configuration
+%% Can be configured via `prometheus_httpd' key of `prometheus' app env.<br/>
+%% Default configuration:
+%% <pre lang="erlang">
+%% {prometheus, [
+%%   ...
+%%   {prometheus_httpd, [{path, "/metrics"},
+%%                       {format, auto},
+%%                       {port, 8081}]},
+%%   ...
+%%   ]}
+%% </pre>
+%% @end
+
 -module(prometheus_httpd).
 
 -export([start/0,
@@ -18,6 +55,10 @@
 %% Public API
 %% ===================================================================
 
+%% @doc
+%% Starts inets httpd server with `promtheus_httpd' module enabled.
+%% Also calls <a href="#setup-0"><tt>setup()</tt></a>.
+%% @end
 start() ->
   setup(),
   inets:start(httpd, [
@@ -30,6 +71,11 @@ start() ->
                       {server_root, code:priv_dir(prometheus_httpd)}
                      ]).
 
+%% @doc
+%% Initializes telemetry metrics.<br/>
+%% *NOTE:* If you plug `prometheus_httpd' in your existing httpd instance,
+%% you have to call this function manually.
+%% @end
 setup() ->
   Registry = default,
 
@@ -50,6 +96,7 @@ setup() ->
   prometheus_summary:declare(ScrapeSize),
   prometheus_summary:declare(ScrapeEncodedSize).
 
+%% @private
 do(Info) ->
   URI = Info#mod.request_uri,
   Path = prometheus_httpd_config:path(),

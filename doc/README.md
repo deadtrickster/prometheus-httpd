@@ -49,6 +49,5 @@ MIT
 
 
 <table width="100%" border="0" summary="list of modules">
-<tr><td><a href="prometheus_httpd.md" class="module">prometheus_httpd</a></td></tr>
-<tr><td><a href="prometheus_httpd_config.md" class="module">prometheus_httpd_config</a></td></tr></table>
+<tr><td><a href="prometheus_httpd.md" class="module">prometheus_httpd</a></td></tr></table>
 
