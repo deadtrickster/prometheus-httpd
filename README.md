@@ -11,7 +11,7 @@ __Version:__ 1.0.0
 [![Build Status](https://travis-ci.org/deadtrickster/prometheus_httpd.svg?branch=version-3)](https://travis-ci.org/deadtrickster/prometheus_httpd)
 [![Coverage Status](https://coveralls.io/repos/github/deadtrickster/prometheus_httpd/badge.svg?branch=master)](https://coveralls.io/github/deadtrickster/prometheus_httpd?branch=master)
 
-Provides httpd middleware "mod-module" (`prometheus_httpd`) for exposing [Prometheus.io](https://github.com/deadtrickster/prometheus.erl) metrics in various formats.
+Provides [httpd middleware](http://erlang.org/doc/man/httpd.html) "mod-module" (`prometheus_httpd`) for exposing [Prometheus.io](https://github.com/deadtrickster/prometheus.erl) metrics in various formats.
 
 Also can start its own httpd instance with just `prometheus_httpd` enabled.
 
