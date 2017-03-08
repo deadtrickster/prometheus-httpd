@@ -59,13 +59,14 @@ do(Info) ->
       Accept = proplists:get_value("accept", Headers, "text/plain"),
       AcceptEncoding = proplists:get_value("accept-encoding", Headers),
       {Code, RespHeaders0, Body} = format_metrics(Accept, AcceptEncoding),
+      ContentLength = integer_to_list(iolist_size(Body)),
       RespHeaders = RespHeaders0 ++ [{code, Code},
-                                     {content_length, integer_to_list(iolist_size(Body))}],
+                                     {content_length, ContentLength}],
       {break, [{response, {response, RespHeaders, [Body]}}]};
     _ ->
       case standalone_p(Info) of
         true ->
-          Body = re:replace(read_index(), "M_E_T_R_I_C_S", Path, [global, {return, list}]),
+          Body = prepare_index(Path),
           {break, [{response, {200, Body}}]};
         false ->
           {proceed, Info#mod.data}
@@ -78,15 +79,15 @@ do(Info) ->
 
 standalone_p(#mod{config_db = ConfigDb}) ->
   case httpd_util:lookup(ConfigDb, server_name) of
-     ?SERVER_NAME ->
+    ?SERVER_NAME ->
       true;
     _ -> false
   end.
 
-read_index() ->
+prepare_index(Path) ->
   FileName = filename:join([code:priv_dir(prometheus_httpd), "index.html"]),
   {ok, Content} = file:read_file(FileName),
-  Content.
+  re:replace(Content, "M_E_T_R_I_C_S", Path, [global, {return, list}]).
 
 format_metrics(Accept, AcceptEncoding) ->
   case negotiate_format(Accept) of

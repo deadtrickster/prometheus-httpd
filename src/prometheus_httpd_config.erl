@@ -1,5 +1,5 @@
 %% @doc
-%% 
+%%
 %% @end
 -module(prometheus_httpd_config).
 
