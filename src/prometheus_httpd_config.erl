@@ -1,3 +1,6 @@
+%% @doc
+%% 
+%% @end
 -module(prometheus_httpd_config).
 
 -export([path/0,
