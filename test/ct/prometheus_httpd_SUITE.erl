@@ -49,7 +49,7 @@ prometheus_httpd(_Config) ->
   ?assertMatch(200, status(Response)),
   CT = prometheus_text_format:content_type(),
   ExpectedCT = binary_to_list(CT),
-  ?assertMatch([{"content-encoding","gzip"},
+  ?assertMatch([{"content-encoding", "gzip"},
                 {"content-length", ExpectedCL},
                 {"content-type", ExpectedCT}|_]
                when ExpectedCL > 0, headers(Response)).
