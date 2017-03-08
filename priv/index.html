@@ -1,0 +1,40 @@
+<html>
+  <head><title>Prometheus Inets Httpd Exporter</title></head>
+  <body>
+    <div style="width:500px; margin:0 auto;">
+      <h1>Welcome to prometheus exporter.</h1>
+      <h2><a href="M_E_T_R_I_C_S">Metrics Endpoint</a> <span id="fullpath"></span></h2>
+
+      <script>
+       (function () {
+         var path = "M_E_T_R_I_C_S";
+         var origin = window.location.origin;
+
+         if (!origin) {
+           document.getElementById("fullpath").innerHTML = path;
+         } else {
+           document.getElementById("fullpath").innerHTML = origin + path;
+         }
+       })();
+      </script>
+
+      <h3>Integrations</h3>
+      <ul>
+        <li><a href="https://hex.pm/packages/prometheus_ecto">Ecto Instrumenter</a></li>
+        <li><a href="https://github.com/deadtrickster/prometheus.erl">Erlang client</a></li>
+        <li><a href="https://github.com/deadtrickster/prometheus.ex">Elixir client</a></li>
+        <li><a href="https://hex.pm/packages/prometheus_plugs">Elixir plugs Instrumenters and Exporter</a></li>
+        <li><a href="https://github.com/gmtprime/extatus">Extatus - App to report metrics to Prometheus from Elixir GenServers</a></li>
+        <li><a href="https://github.com/jlouis/fuse#fuse_stats_prometheus">Fuse plugin</a></li>
+        <li><a href="https://hex.pm/packages/prometheus_process_collector">OS process info Collector</a> (linux-only)</li>
+        <li><a href="https://hex.pm/packages/prometheus_phoenix">Phoenix Instrumenter</a></li>
+        <li><a href="https://github.com/deadtrickster/prometheus_rabbitmq_exporter">RabbitMQ Exporter</a>.</li>
+      </ul>
+
+      <h3>Dashboards</h3>
+      <ul>
+        <li><a href="https://github.com/deadtrickster/beam-dashboards">Beam Dashboards</a>.</li>
+      </ul>
+    </div>
+  </body>
+</html>

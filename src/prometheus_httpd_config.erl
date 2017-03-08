@@ -9,7 +9,7 @@
          port/0]).
 
 %% Macros.
--define(DEFAULT_PATH, <<"/metrics">>).
+-define(DEFAULT_PATH, "/metrics").
 -define(DEFAULT_FORMAT, auto).
 -define(DEFAULT_PORT, 8081).
 

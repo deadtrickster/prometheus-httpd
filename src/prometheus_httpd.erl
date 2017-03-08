@@ -12,6 +12,8 @@
 -define(SCRAPE_SIZE, telemetry_scrape_size_bytes).
 -define(SCRAPE_ENCODED_SIZE, telemetry_scrape_encoded_size_bytes).
 
+-define(SERVER_NAME, "Prometheus.io metrics.").
+
 %% ===================================================================
 %% Public API
 %% ===================================================================
@@ -23,7 +25,7 @@ start() ->
                                  prometheus_httpd
                                 ]},
                       {port, prometheus_httpd_config:port()},
-                      {server_name, "Prometheus.io metrics."},
+                      {server_name, ?SERVER_NAME},
                       {document_root, code:priv_dir(prometheus_httpd)},
                       {server_root, code:priv_dir(prometheus_httpd)}
                      ]).
@@ -50,20 +52,41 @@ setup() ->
 
 do(Info) ->
   URI = Info#mod.request_uri,
-  case prometheus_httpd_config:path() of
+  Path = prometheus_httpd_config:path(),
+  case Path of
     URI ->
       Headers = Info#mod.parsed_header,
       Accept = proplists:get_value("accept", Headers, "text/plain"),
       AcceptEncoding = proplists:get_value("accept-encoding", Headers),
-      {Code, Headers, Body} = format_metrics(Accept, AcceptEncoding),
-      {break, [{response, {response, Headers ++ [{code, Code}], Body}}]};
+      {Code, RespHeaders0, Body} = format_metrics(Accept, AcceptEncoding),
+      RespHeaders = RespHeaders0 ++ [{code, Code},
+                                     {content_length, integer_to_list(iolist_size(Body))}],
+      {break, [{response, {response, RespHeaders, [Body]}}]};
     _ ->
-      {proceed, Info}
+      case standalone_p(Info) of
+        true ->
+          Body = re:replace(read_index(), "M_E_T_R_I_C_S", Path, [global, {return, list}]),
+          {break, [{response, {200, Body}}]};
+        false ->
+          {proceed, Info#mod.data}
+      end
   end.
 
 %% ===================================================================
 %% Private Parts
 %% ===================================================================
+
+standalone_p(#mod{config_db = ConfigDb}) ->
+  case httpd_util:lookup(ConfigDb, server_name) of
+     ?SERVER_NAME ->
+      true;
+    _ -> false
+  end.
+
+read_index() ->
+  FileName = filename:join([code:priv_dir(prometheus_httpd), "index.html"]),
+  {ok, Content} = file:read_file(FileName),
+  Content.
 
 format_metrics(Accept, AcceptEncoding) ->
   case negotiate_format(Accept) of
@@ -89,9 +112,9 @@ negotiate_format(Accept) ->
   end.
 
 negotiate_encoding(AcceptEncoding) ->
-  accept_encoding_header:negotiate(AcceptEncoding, [<<"gzip">>,
-                                                    <<"deflate">>,
-                                                    <<"identity">>]).
+  accept_encoding_header:negotiate(AcceptEncoding, ["gzip",
+                                                    "deflate",
+                                                    "identity"]).
 
 render_format(Format) ->
   Registry = default,
@@ -115,12 +138,12 @@ encode_format(ContentType, Encoding, Scrape) ->
                              ?SCRAPE_ENCODED_SIZE,
                              [Registry, ContentType, Encoding],
                              iolist_size(Encoded)),
-  {200, [{content_type, ContentType},
+  {200, [{content_type, binary_to_list(ContentType)},
          {content_encoding, Encoding}], Encoded}.
 
-encode_format_(<<"gzip">>, Scrape) ->
+encode_format_("gzip", Scrape) ->
   zlib:gzip(Scrape);
-encode_format_(<<"deflate">>, Scrape) ->
+encode_format_("deflate", Scrape) ->
   ZStream = zlib:open(),
   zlib:deflateInit(ZStream),
   try
@@ -128,5 +151,5 @@ encode_format_(<<"deflate">>, Scrape) ->
   after
     zlib:deflateEnd(ZStream)
   end;
-encode_format_(<<"identity">>, Scrape) ->
+encode_format_("identity", Scrape) ->
   Scrape.
