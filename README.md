@@ -15,6 +15,14 @@ Provides [httpd middleware](http://erlang.org/doc/man/httpd.html) "mod-module" (
 
 Also can start its own httpd instance with just `prometheus_httpd` enabled.
 
+## Usage
+
+```
+prometheus_httpd:start()
+```
+
+More in `prometheus_httpd` module [documentation](/deadtrickster/prometheus_httpd/blob/master/doc/prometheus_httpd.md)
+
 ![BEAM Dashboard](https://raw.githubusercontent.com/deadtrickster/beam-dashboards/master/BEAM.png)
 
 - IRC: #erlang on Freenode; 
