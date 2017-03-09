@@ -9,15 +9,21 @@
 
 -define(README, "README.md").
 
--define(EMPTY_SCRAPE_TEXT,
-"# TYPE telemetry_scrape_duration_seconds summary
-# HELP telemetry_scrape_duration_seconds Scrape duration
-# TYPE telemetry_scrape_size_bytes summary
-# HELP telemetry_scrape_size_bytes Scrape size, not encoded
-# TYPE telemetry_scrape_encoded_size_bytes summary
-# HELP telemetry_scrape_encoded_size_bytes Scrape size, encoded
+-define(PROMETHEUS_ACCEPT, "application/vnd.google.protobuf;"
+        "proto=io.prometheus.client.MetricFamily;encoding=delimited;q=0.7,"
+        "text/plain;version=0.0.4;q=0.3,"
+        "application/json;schema=\"prometheus/telemetry\";version=0.0.2;q=0.2,"
+        "*/*;q=0.1").
 
-").
+-define(TELEMETRY_METRICS_METADATA,
+        [
+         "# TYPE telemetry_scrape_duration_seconds summary",
+         "# HELP telemetry_scrape_duration_seconds Scrape duration",
+         "# TYPE telemetry_scrape_size_bytes summary",
+         "# HELP telemetry_scrape_size_bytes Scrape size, not encoded",
+         "# TYPE telemetry_scrape_encoded_size_bytes summary",
+         "# HELP telemetry_scrape_encoded_size_bytes Scrape size, encoded"
+        ]).
 
 %% @doc All tests of this suite.
 all() ->
@@ -29,7 +35,8 @@ all() ->
 groups() ->
   [
    {positive, [sequential], [
-                             prometheus_httpd
+                             prometheus_httpd_standalone,
+                             prometheus_httpd_negotiation
                             ]}
   ].
 
@@ -44,19 +51,63 @@ init_per_suite(Config) ->
 %% TESTS
 %% ===================================================================
 
-prometheus_httpd(_Config) ->
-  {ok, Response} = httpc:request("http://localhost:8081/metrics"),
-  ?assertMatch(200, status(Response)),
-  CT = prometheus_text_format:content_type(),
-  ExpectedCT = binary_to_list(CT),
+prometheus_httpd_standalone(_Config) ->
+  {ok, MetricsResponse} = httpc:request("http://localhost:8081/metrics"),
+  ?assertMatch(200, status(MetricsResponse)),
+  MetricsCT = prometheus_text_format:content_type(),
+  ExpecteMetricsCT = binary_to_list(MetricsCT),
   ?assertMatch([{"content-encoding", "gzip"},
-                {"content-length", ExpectedCL},
-                {"content-type", ExpectedCT}|_]
-               when ExpectedCL > 0, headers(Response)).
+                {"content-length", ExpectedMetricsCL},
+                {"content-type", ExpecteMetricsCT}|_]
+               when ExpectedMetricsCL > 0, headers(MetricsResponse)),
+  MetricsBody = zlib:gunzip(body(MetricsResponse)),
+  ?assertMatch(true, all_telemetry_metrics_present(MetricsBody)),
+
+  {ok, HTMLResponse} = httpc:request("http://localhost:8081/random_path"),
+  ?assertMatch(200, status(HTMLResponse)),
+  ExpectedHTMLCT = "text/html",
+  ?assertMatch([{"content-length", ExpectedHTMLCL},
+                {"content-type", ExpectedHTMLCT}|_]
+               when ExpectedHTMLCL > 0, headers(HTMLResponse)),
+
+  Path = prometheus_httpd_config:path(),
+  ?assertMatch({match, _}, re:run(body(HTMLResponse), ["href=\"", Path, "\""])).
+
+prometheus_httpd_negotiation(_Config) ->
+  {ok, TextResponse} =
+    httpc:request(get, {"http://localhost:8081/metrics",
+                        [{"Accept-Encoding", "deflate"}]}, [], []),
+  ?assertMatch(200, status(TextResponse)),
+  TextCT = prometheus_text_format:content_type(),
+  ExpectedTextCT = binary_to_list(TextCT),
+  ?assertMatch([{"content-encoding", "deflate"},
+                {"content-length", ExpectedTextCL},
+                {"content-type", ExpectedTextCT}|_]
+               when ExpectedTextCL > 0, headers(TextResponse)),
+
+  {ok, ProtobufResponse} =
+    httpc:request(get, {"http://localhost:8081/metrics",
+                        [{"Accept", ?PROMETHEUS_ACCEPT},
+                         {"Accept-Encoding", "identity, sdch"}]}, [], []),
+  ?assertMatch(200, status(ProtobufResponse)),
+  ProtobufCT = prometheus_protobuf_format:content_type(),
+  ExpectedProtobufCT = binary_to_list(ProtobufCT),
+  ?assertMatch([{"content-encoding", "identity"},
+                {"content-length", ExpectedProtobufCL},
+                {"content-type", ExpectedProtobufCT}|_]
+               when ExpectedProtobufCL > 0, headers(ProtobufResponse)).
 
 %% ===================================================================
 %% Private parts
 %% ===================================================================
+
+all_telemetry_metrics_present(Body) ->
+  lists:all(fun(Metric) ->
+                case re:run(Body, Metric) of
+                  {match, _} -> true;
+                  _ -> false
+                end
+            end, ?TELEMETRY_METRICS_METADATA).
 
 %%% Helpers
 
