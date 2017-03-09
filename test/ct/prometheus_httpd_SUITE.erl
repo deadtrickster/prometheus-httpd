@@ -58,11 +58,11 @@ init_per_suite(Config) ->
                       {server_name, "my test_server_name"},
                       {document_root, code:priv_dir(prometheus_httpd)},
                       {server_root, code:priv_dir(prometheus_httpd)},
-                      {mime_types,[
-                                   {"html","text/html"},
-                                   {"css","text/css"},
-                                   {"js","application/x-javascript"}
-                                  ]}
+                      {mime_types, [
+                                    {"html", "text/html"},
+                                    {"css", "text/css"},
+                                    {"js", "application/x-javascript"}
+                                   ]}
                      ]),
   Config.
 
