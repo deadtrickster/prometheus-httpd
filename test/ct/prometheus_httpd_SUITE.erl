@@ -36,7 +36,8 @@ groups() ->
   [
    {positive, [sequential], [
                              prometheus_httpd_standalone,
-                             prometheus_httpd_negotiation
+                             prometheus_httpd_negotiation,
+                             prometheus_httpd_negotiation_fail
                             ]}
   ].
 
@@ -84,6 +85,7 @@ prometheus_httpd_negotiation(_Config) ->
                 {"content-length", ExpectedTextCL},
                 {"content-type", ExpectedTextCT}|_]
                when ExpectedTextCL > 0, headers(TextResponse)),
+  ?assert(iolist_size(body(TextResponse)) > 0),
 
   {ok, ProtobufResponse} =
     httpc:request(get, {"http://localhost:8081/metrics",
@@ -95,7 +97,35 @@ prometheus_httpd_negotiation(_Config) ->
   ?assertMatch([{"content-encoding", "identity"},
                 {"content-length", ExpectedProtobufCL},
                 {"content-type", ExpectedProtobufCT}|_]
-               when ExpectedProtobufCL > 0, headers(ProtobufResponse)).
+               when ExpectedProtobufCL > 0, headers(ProtobufResponse)),
+  ?assert(iolist_size(body(ProtobufResponse)) > 0).
+
+prometheus_httpd_negotiation_fail(_Config) ->
+  {ok, IdentityResponse} =
+    httpc:request(get, {"http://localhost:8081/metrics",
+                        [{"Accept-Encoding", "qwe"}]}, [], []),
+  ?assertMatch(200, status(IdentityResponse)),
+  IdentityCT = prometheus_text_format:content_type(),
+  ExpectedIdentityCT = binary_to_list(IdentityCT),
+  ?assertMatch([{"content-encoding", "identity"},
+                {"content-length", ExpectedIdentityCL},
+                {"content-type", ExpectedIdentityCT}|_]
+               when ExpectedIdentityCL > 0, headers(IdentityResponse)),
+
+  {ok, FEResponse} =
+    httpc:request(get, {"http://localhost:8081/metrics",
+                        [{"Accept-Encoding", "qwe, *;q=0"}]}, [], []),
+  ?assertMatch(406, status(FEResponse)),
+  ?assertMatch([{"content-length", "0"},
+                {"content-type", "text/html"}|_], headers(FEResponse)),
+
+  {ok, CTResponse} =
+    httpc:request(get, {"http://localhost:8081/metrics",
+                        [{"Accept", "image/png"}]}, [], []),
+  ?assertMatch(406, status(CTResponse)),
+  ?assertMatch([{"content-length", "0"},
+                {"content-type", "text/html"}|_],
+               headers(CTResponse)).
 
 %% ===================================================================
 %% Private parts

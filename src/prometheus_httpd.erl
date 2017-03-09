@@ -146,7 +146,7 @@ format_metrics(Accept, AcceptEncoding) ->
         undefined ->
           {406, [], <<>>};
         Encoding ->
-          encode_format(ContentType, Encoding, Scrape)
+          encode_format(ContentType, binary_to_list(Encoding), Scrape)
       end
   end.
 
@@ -160,9 +160,9 @@ negotiate_format(Accept) ->
   end.
 
 negotiate_encoding(AcceptEncoding) ->
-  accept_encoding_header:negotiate(AcceptEncoding, ["gzip",
-                                                    "deflate",
-                                                    "identity"]).
+  accept_encoding_header:negotiate(AcceptEncoding, [<<"gzip">>,
+                                                    <<"deflate">>,
+                                                    <<"identity">>]).
 
 render_format(Format) ->
   Registry = default,
