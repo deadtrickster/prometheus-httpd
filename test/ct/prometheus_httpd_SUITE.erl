@@ -37,7 +37,9 @@ groups() ->
    {positive, [sequential], [
                              prometheus_httpd_standalone,
                              prometheus_httpd_negotiation,
-                             prometheus_httpd_negotiation_fail
+                             prometheus_httpd_negotiation_fail,
+
+                             prometheus_httpd_mod
                             ]}
   ].
 
@@ -46,6 +48,22 @@ init_per_suite(Config) ->
   {ok, _} = application:ensure_all_started(inets),
   {ok, _} = application:ensure_all_started(prometheus),
   prometheus_httpd:start(),
+
+  inets:start(httpd, [
+                      {modules, [
+                                 prometheus_httpd,
+                                 mod_get
+                                ]},
+                      {port, 8082},
+                      {server_name, "my test_server_name"},
+                      {document_root, code:priv_dir(prometheus_httpd)},
+                      {server_root, code:priv_dir(prometheus_httpd)},
+                      {mime_types,[
+                                   {"html","text/html"},
+                                   {"css","text/css"},
+                                   {"js","application/x-javascript"}
+                                  ]}
+                     ]),
   Config.
 
 %% ===================================================================
@@ -70,7 +88,6 @@ prometheus_httpd_standalone(_Config) ->
   ?assertMatch([{"content-length", ExpectedHTMLCL},
                 {"content-type", ExpectedHTMLCT}|_]
                when ExpectedHTMLCL > 0, headers(HTMLResponse)),
-
   Path = prometheus_httpd_config:path(),
   ?assertMatch({match, _}, re:run(body(HTMLResponse), ["href=\"", Path, "\""])).
 
@@ -126,6 +143,35 @@ prometheus_httpd_negotiation_fail(_Config) ->
   ?assertMatch([{"content-length", "0"},
                 {"content-type", "text/html"}|_],
                headers(CTResponse)).
+
+prometheus_httpd_mod(_Config) ->
+  {ok, MetricsResponse} = httpc:request("http://localhost:8082/metrics"),
+  ?assertMatch(200, status(MetricsResponse)),
+  MetricsCT = prometheus_text_format:content_type(),
+  ExpecteMetricsCT = binary_to_list(MetricsCT),
+  ?assertMatch([{"content-encoding", "gzip"},
+                {"content-length", ExpectedMetricsCL},
+                {"content-type", ExpecteMetricsCT}|_]
+               when ExpectedMetricsCL > 0, headers(MetricsResponse)),
+  MetricsBody = zlib:gunzip(body(MetricsResponse)),
+  ?assertMatch(true, all_telemetry_metrics_present(MetricsBody)),
+
+  {ok, HTMLResponse} = httpc:request("http://localhost:8082/index.html"),
+  ?assertMatch(200, status(HTMLResponse)),
+  ExpectedHTMLCT = "text/html",
+  ?assertMatch([{"content-length", ExpectedHTMLCL},
+                {"content-type", ExpectedHTMLCT}|_]
+               when ExpectedHTMLCL > 0, headers(HTMLResponse)),
+  ?assertMatch({match, _}, re:run(body(HTMLResponse), "M_E_T_R_I_C_S")),
+
+  {ok, CTResponse} =
+    httpc:request(get, {"http://localhost:8082/qwe",
+                        []}, [], []),
+  ?assertMatch(404, status(CTResponse)),
+  ?assertMatch([{"content-length", CL404},
+                {"content-type", "text/html"}|_]
+               when CL404 > 0,
+                    headers(CTResponse)).
 
 %% ===================================================================
 %% Private parts
