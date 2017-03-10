@@ -38,6 +38,12 @@
                         [], []),
         ?assertMatch(403, status(DeniedR2)),
 
+        {ok, DeniedR3} =
+          httpc:request(get, {"http://localhost:8081/metrics",
+                              [{"Authorization", "Basic abba"}]},
+                        [], []),
+        ?assertMatch(403, status(DeniedR3)),
+
         {ok, BasicLPR} =
           httpc:request(get, {"http://localhost:8081/metrics",
                               [{"Authorization", "Basic cXdlOnF3YQ=="}]},
@@ -292,6 +298,8 @@ authorize(#{headers := Headers}) ->
     undefined ->
       false;
     "Basic cXdlOnF3ZQ==" ->
+      false;
+    "Basic abba" ->
       false;
     _ ->
       true
