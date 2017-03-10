@@ -151,8 +151,6 @@ parse_basic_encoded(Encoded) ->
 
 %% TODO: move to prometheus_registry
 
-registry_exists(undefined) ->
-  default;
 registry_exists(Name) ->
   First = ets:first(?PROMETHEUS_REGISTRY_TABLE),
   registry_exists(First, iolist_to_binary(Name)).
