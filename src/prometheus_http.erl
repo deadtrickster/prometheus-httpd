@@ -66,11 +66,29 @@ format_metrics(Headers, Registry) ->
 maybe_render_index(Standalone, Path, Headers) ->
   case Standalone of
     true ->
-      MetricsPath = prometheus_httpd_config:path(),
-      if_authorized(Path, Headers,
-                    fun () ->
-                        {200, [], prepare_index(MetricsPath)}
-                    end);
+      case Path of
+        "/favicon.ico" ->
+          {200, [{"content-type", "image/png"}],
+           %% https://www.iconfinder.com/icons/85652/fire_torch_icon#size=30
+           %% http://www.iconbeast.com/
+           base64:decode("iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAABaklEQ"
+                         "VRIS+2UsU0EQQxF3+UElAASBUAHUAACKgACcqjg6AByAqACOFEAJU"
+                         "ABBHRAQg760liaG+2u7QF0CROd9sb/+dsez+g7G8AzcAE89kjMeoK"
+                         "AbeClxF6XBFJSveAH4LAipXXSAcAVcN7YS+tkA26Bk4GaSmcXOIiW"
+                         "PQMegyoP6Vj5d4BXr+FR8CUwnxC7qyqh36e/Bf4A1j2xzLBFHX8NQ"
+                         "N/LN73p9ri67oWi2IIFVS/VVw3Vn4G1pWqAemh91dDVR0ltem2JOl"
+                         "Y5tamsz3VcO+1HkTUaBcuA1qScC17HqRL6rmOV8AwvCbiXC1QOF6X"
+                         "UitFCOS6Lw32/Bsk4jiQWvhMFWymjwnvexSjY00n/nwFHXbtulWUG"
+                         "/ASsOdY+gf2I/QzYpndK976a9kl+BiyhG2BrRPENOIu4zZbaNIech"
+                         "53+9B23gxYaqLoa2VJb7MrASsDgabe9PW5d/4NDL6p3uFba45CzsU"
+                         "vfrgozHx5iraMAAAAASUVORK5CYII=")};
+        _ ->
+          MetricsPath = prometheus_httpd_config:path(),
+          if_authorized(Path, Headers,
+                        fun () ->
+                            {200, [], prepare_index(MetricsPath)}
+                        end)
+      end;
     false ->
       false
   end.

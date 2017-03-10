@@ -1,22 +1,30 @@
 <html>
-  <head><title>Prometheus Inets Httpd Exporter</title></head>
+  <head><title>Prometheus Exporter</title></head>
   <body>
     <div style="width:500px; margin:0 auto;">
       <h1>Welcome to prometheus exporter.</h1>
       <h2><a href="M_E_T_R_I_C_S">Metrics Endpoint</a> <span id="fullpath"></span></h2>
 
       <script>
-       (function () {
-         var path = "M_E_T_R_I_C_S";
-         var origin = window.location.origin;
+        (function () {
+        var path = "M_E_T_R_I_C_S";
+        var origin = window.location.origin;
 
-         if (!origin) {
-           document.getElementById("fullpath").innerHTML = path;
-         } else {
-           document.getElementById("fullpath").innerHTML = origin + path;
-         }
-       })();
+        if (!origin) {
+        document.getElementById("fullpath").innerHTML = path;
+        } else {
+        document.getElementById("fullpath").innerHTML = origin + path;
+        }
+        })();
       </script>
+
+      <style>
+       .copyright {
+         color: gray;
+         font-size: 12px;
+         text-align: center;
+       }
+      </style>
 
       <h3>Integrations</h3>
       <ul>
@@ -35,6 +43,9 @@
       <ul>
         <li><a href="https://github.com/deadtrickster/beam-dashboards">Beam Dashboards</a>.</li>
       </ul>
+
+      <div class="copyright">Torch Icon Copyright (c) IconBeast.com</div>
+      <div class="copyright">Copyright (c) 2017 Ilya Khaprov</div>
     </div>
   </body>
 </html>
