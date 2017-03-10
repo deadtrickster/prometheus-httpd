@@ -15,7 +15,7 @@ reply(#{path := Path,
         registry := Registry,
         standalone := Standalone}) ->
 
-  case prometheus_httpd_config:valid_path_and_registry(Path, Registry) of
+  case prometheus_http_config:valid_path_and_registry(Path, Registry) of
     {true, RealRegistry} ->
       if_authorized(Path, Headers,
                     fun () ->
@@ -35,7 +35,7 @@ reply(#{path := Path,
 %% you have to call this function manually.
 %% @end
 setup() ->
-  TelemetryRegistry = prometheus_httpd_config:telemetry_registry(),
+  TelemetryRegistry = prometheus_http_config:telemetry_registry(),
 
   ScrapeDuration = [{name, ?SCRAPE_DURATION},
                     {help, "Scrape duration"},
@@ -83,7 +83,7 @@ maybe_render_index(Standalone, Path, Headers) ->
                          "53+9B23gxYaqLoa2VJb7MrASsDgabe9PW5d/4NDL6p3uFba45CzsU"
                          "vfrgozHx5iraMAAAAASUVORK5CYII=")};
         _ ->
-          MetricsPath = prometheus_httpd_config:path(),
+          MetricsPath = prometheus_http_config:path(),
           if_authorized(Path, Headers,
                         fun () ->
                             {200, [], prepare_index(MetricsPath)}
@@ -94,7 +94,7 @@ maybe_render_index(Standalone, Path, Headers) ->
   end.
 
 if_authorized(URI, Headers, Fun) ->
-  case prometheus_httpd_config:authorization() of
+  case prometheus_http_config:authorization() of
     {invalid_authorize, _} ->
       {500, [], <<>>};
     Auth ->
@@ -127,9 +127,9 @@ format_metrics(Accept, AcceptEncoding, Registry) ->
   end.
 
 negotiate_format(Accept) ->
-  case prometheus_httpd_config:format() of
+  case prometheus_http_config:format() of
     auto ->
-      Alternatives = prometheus_httpd_config:allowed_formats(),
+      Alternatives = prometheus_http_config:allowed_formats(),
       accept_header:negotiate(Accept, Alternatives);
     Format0 -> Format0
   end.
@@ -141,7 +141,7 @@ negotiate_encoding(AcceptEncoding) ->
 
 render_format(Format, Registry) ->
   ContentType = Format:content_type(),
-  TelemetryRegistry = prometheus_httpd_config:telemetry_registry(),
+  TelemetryRegistry = prometheus_http_config:telemetry_registry(),
 
   Scrape = prometheus_summary:observe_duration(
              TelemetryRegistry,
@@ -156,7 +156,7 @@ render_format(Format, Registry) ->
 
 encode_format(ContentType, Encoding, Scrape, Registry) ->
   Encoded = encode_format_(Encoding, Scrape),
-  TelemetryRegistry = prometheus_httpd_config:telemetry_registry(),
+  TelemetryRegistry = prometheus_http_config:telemetry_registry(),
 
   prometheus_summary:observe(TelemetryRegistry,
                              ?SCRAPE_ENCODED_SIZE,

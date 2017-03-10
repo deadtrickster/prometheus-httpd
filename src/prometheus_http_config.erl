@@ -1,5 +1,5 @@
 %% @private
--module(prometheus_httpd_config).
+-module(prometheus_http_config).
 
 -export([path/0,
          valid_path_and_registry/2,
@@ -128,7 +128,7 @@ try_match_path(Path, URI) ->
 
 get_value(Key, Default) -> proplists:get_value(Key, config(), Default).
 
-config() -> application:get_env(prometheus, prometheus_httpd, ?DEFAULT_CONFIG).
+config() -> application:get_env(prometheus, prometheus_http, ?DEFAULT_CONFIG).
 
 call_with_basic_auth(Headers, Fun) ->
   case Headers("authorization", undefined) of

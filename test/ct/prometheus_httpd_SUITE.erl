@@ -119,7 +119,7 @@ prometheus_httpd_standalone(_Config) ->
   ?assertMatch([{"content-length", ExpectedHTMLCL},
                 {"content-type", ExpectedHTMLCT}|_]
                when ExpectedHTMLCL > 0, headers(HTMLResponse)),
-  Path = prometheus_httpd_config:path(),
+  Path = prometheus_http_config:path(),
   ?assertMatch({match, _}, re:run(body(HTMLResponse), ["href=\"", Path, "\""])).
 
 prometheus_httpd_negotiation(_Config) ->
@@ -230,7 +230,7 @@ prometheus_httpd_registry(_Config) ->
                     headers(IRResponse)).
 
 prometheus_httpd_registry_conflict(_Config) ->
-  application:set_env(prometheus, prometheus_httpd,
+  application:set_env(prometheus, prometheus_http,
                       [{registry, default}]),
 
   {ok, DeniedR1} =
@@ -240,40 +240,40 @@ prometheus_httpd_registry_conflict(_Config) ->
 
 
 prometheus_httpd_auth_basic1(_Config) ->
-  application:set_env(prometheus, prometheus_httpd, [{authorization,
+  application:set_env(prometheus, prometheus_http, [{authorization,
                                                       {basic, "qwe", "qwa"}}]),
 
   ?AUTH_TESTS.
 
 prometheus_httpd_auth_basic2(_Config) ->
-  application:set_env(prometheus, prometheus_httpd, [{authorization,
+  application:set_env(prometheus, prometheus_http, [{authorization,
                                                       {basic, ?MODULE}}]),
 
   ?AUTH_TESTS.
 
 prometheus_httpd_auth_basic3(_Config) ->
-  application:set_env(prometheus, prometheus_httpd,
+  application:set_env(prometheus, prometheus_http,
                       [{authorization,
                         {basic, {?MODULE, authorize}}}]),
 
   ?AUTH_TESTS.
 
 prometheus_httpd_auth_provider1(_Config) ->
-  application:set_env(prometheus, prometheus_httpd,
+  application:set_env(prometheus, prometheus_http,
                       [{authorization,
                         {?MODULE, authorize}}]),
 
   ?AUTH_TESTS.
 
 prometheus_httpd_auth_provider2(_Config) ->
-  application:set_env(prometheus, prometheus_httpd,
+  application:set_env(prometheus, prometheus_http,
                       [{authorization,
                         ?MODULE}]),
 
   ?AUTH_TESTS.
 
 prometheus_httpd_auth_invalid(_Config) ->
-  application:set_env(prometheus, prometheus_httpd,
+  application:set_env(prometheus, prometheus_http,
                       [{authorization, "qwe"}]),
 
   {ok, DeniedR1} =
