@@ -25,6 +25,25 @@
          "# HELP telemetry_scrape_encoded_size_bytes Scrape size, encoded"
         ]).
 
+-define(AUTH_TESTS,
+
+        {ok, DeniedR1} =
+          httpc:request(get, {"http://localhost:8081/metrics",
+                              []}, [], []),
+        ?assertMatch(403, status(DeniedR1)),
+
+        {ok, DeniedR2} =
+          httpc:request(get, {"http://localhost:8081/metrics",
+                              [{"Authorization", "Basic cXdlOnF3ZQ=="}]},
+                        [], []),
+        ?assertMatch(403, status(DeniedR2)),
+
+        {ok, BasicLPR} =
+          httpc:request(get, {"http://localhost:8081/metrics",
+                              [{"Authorization", "Basic cXdlOnF3YQ=="}]},
+                        [], []),
+        ?assertMatch(200, status(BasicLPR))).
+
 %% @doc All tests of this suite.
 all() ->
   [
@@ -39,7 +58,19 @@ groups() ->
                              prometheus_httpd_negotiation,
                              prometheus_httpd_negotiation_fail,
 
-                             prometheus_httpd_mod
+                             prometheus_httpd_mod,
+
+                             prometheus_httpd_registry,
+                             prometheus_httpd_registry_conflict,
+
+                             prometheus_httpd_auth_basic1,
+                             prometheus_httpd_auth_basic2,
+                             prometheus_httpd_auth_basic3,
+
+                             prometheus_httpd_auth_provider1,
+                             prometheus_httpd_auth_provider2,
+
+                             prometheus_httpd_auth_invalid
                             ]}
   ].
 
@@ -172,6 +203,99 @@ prometheus_httpd_mod(_Config) ->
                 {"content-type", "text/html"}|_]
                when CL404 > 0,
                     headers(CTResponse)).
+
+prometheus_httpd_registry(_Config) ->
+  prometheus_counter:new([{registry, qwe}, {name, qwe}, {help, ""}]),
+  prometheus_counter:inc(qwe, qwe, [], 10),
+
+  {ok, MetricsResponse} = httpc:request("http://localhost:8081/metrics/qwe"),
+  ?assertMatch(200, status(MetricsResponse)),
+  MetricsCT = prometheus_text_format:content_type(),
+  ExpecteMetricsCT = binary_to_list(MetricsCT),
+  ?assertMatch([{"content-encoding", "gzip"},
+                {"content-length", ExpectedMetricsCL},
+                {"content-type", ExpecteMetricsCT}|_]
+               when ExpectedMetricsCL > 0, headers(MetricsResponse)),
+  MetricsBody = zlib:gunzip(body(MetricsResponse)),
+  ?assertMatch(false, all_telemetry_metrics_present(MetricsBody)),
+  ?assertMatch({match, _}, re:run(MetricsBody, "# TYPE qwe counter")),
+
+  {ok, IRResponse} =
+    httpc:request(get, {"http://localhost:8082/metrics/qwa",
+                        []}, [], []),
+  ?assertMatch(404, status(IRResponse)),
+  ?assertMatch([{"content-length", CL404},
+                {"content-type", "text/html"}|_]
+               when CL404 > 0,
+                    headers(IRResponse)).
+
+prometheus_httpd_registry_conflict(_Config) ->
+  application:set_env(prometheus, prometheus_httpd,
+                      [{registry, default}]),
+
+  {ok, DeniedR1} =
+    httpc:request(get, {"http://localhost:8081/metrics/qwe",
+                        []}, [], []),
+  ?assertMatch(409, status(DeniedR1)).
+
+
+prometheus_httpd_auth_basic1(_Config) ->
+  application:set_env(prometheus, prometheus_httpd, [{authorization,
+                                                      {basic, "qwe", "qwa"}}]),
+
+  ?AUTH_TESTS.
+
+prometheus_httpd_auth_basic2(_Config) ->
+  application:set_env(prometheus, prometheus_httpd, [{authorization,
+                                                      {basic, ?MODULE}}]),
+
+  ?AUTH_TESTS.
+
+prometheus_httpd_auth_basic3(_Config) ->
+  application:set_env(prometheus, prometheus_httpd,
+                      [{authorization,
+                        {basic, {?MODULE, authorize}}}]),
+
+  ?AUTH_TESTS.
+
+prometheus_httpd_auth_provider1(_Config) ->
+  application:set_env(prometheus, prometheus_httpd,
+                      [{authorization,
+                        {?MODULE, authorize}}]),
+
+  ?AUTH_TESTS.
+
+prometheus_httpd_auth_provider2(_Config) ->
+  application:set_env(prometheus, prometheus_httpd,
+                      [{authorization,
+                        ?MODULE}]),
+
+  ?AUTH_TESTS.
+
+prometheus_httpd_auth_invalid(_Config) ->
+  application:set_env(prometheus, prometheus_httpd,
+                      [{authorization, "qwe"}]),
+
+  {ok, DeniedR1} =
+    httpc:request(get, {"http://localhost:8081/metrics",
+                        []}, [], []),
+  ?assertMatch(500, status(DeniedR1)).
+
+
+authorize("qwe", "qwa") ->
+  true;
+authorize(_, _) ->
+  false.
+
+authorize(#{headers := Headers}) ->
+  case Headers("authorization", undefined) of
+    undefined ->
+      false;
+    "Basic cXdlOnF3ZQ==" ->
+      false;
+    _ ->
+      true
+  end.
 
 %% ===================================================================
 %% Private parts

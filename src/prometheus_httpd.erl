@@ -37,17 +37,12 @@
 
 -module(prometheus_httpd).
 
--export([start/0,
-         setup/0]).
+-export([start/0]).
 
 %% httpd mod callbacks
 -export([do/1]).
 
 -include_lib("inets/include/httpd.hrl").
-
--define(SCRAPE_DURATION, telemetry_scrape_duration_seconds).
--define(SCRAPE_SIZE, telemetry_scrape_size_bytes).
--define(SCRAPE_ENCODED_SIZE, telemetry_scrape_encoded_size_bytes).
 
 -define(SERVER_NAME, "Prometheus.io metrics.").
 
@@ -57,10 +52,10 @@
 
 %% @doc
 %% Starts inets httpd server with `promtheus_httpd' module enabled.
-%% Also calls <a href="#setup-0"><tt>setup()</tt></a>.
+%% Also calls `prometheus_http:setup/0'.
 %% @end
 start() ->
-  setup(),
+  prometheus_http:setup(),
   inets:start(httpd, [
                       {modules, [
                                  prometheus_httpd
@@ -71,53 +66,26 @@ start() ->
                       {server_root, code:priv_dir(prometheus_httpd)}
                      ]).
 
-%% @doc
-%% Initializes telemetry metrics.<br/>
-%% *NOTE:* If you plug `prometheus_httpd' in your existing httpd instance,
-%% you have to call this function manually.
-%% @end
-setup() ->
-  Registry = default,
-
-  ScrapeDuration = [{name, ?SCRAPE_DURATION},
-                    {help, "Scrape duration"},
-                    {labels, ["registry", "content_type"]},
-                    {registry, Registry}],
-  ScrapeSize = [{name, ?SCRAPE_SIZE},
-                {help, "Scrape size, not encoded"},
-                {labels, ["registry", "content_type"]},
-                {registry, Registry}],
-  ScrapeEncodedSize = [{name, ?SCRAPE_ENCODED_SIZE},
-                       {help, "Scrape size, encoded"},
-                       {labels, ["registry", "content_type", "encoding"]},
-                       {registry, Registry}],
-
-  prometheus_summary:declare(ScrapeDuration),
-  prometheus_summary:declare(ScrapeSize),
-  prometheus_summary:declare(ScrapeEncodedSize).
-
 %% @private
 do(Info) ->
   URI = Info#mod.request_uri,
-  Path = prometheus_httpd_config:path(),
-  case Path of
-    URI ->
-      Headers = Info#mod.parsed_header,
-      Accept = proplists:get_value("accept", Headers, "text/plain"),
-      AcceptEncoding = proplists:get_value("accept-encoding", Headers),
-      {Code, RespHeaders0, Body} = format_metrics(Accept, AcceptEncoding),
+  Headers = Info#mod.parsed_header,
+  GetHeader = fun(Name, Default) ->
+                  proplists:get_value(Name, Headers, Default)
+              end,
+
+  %% TODO: check method, response only to GET
+  case prometheus_http:reply(#{path => URI,
+                               headers => GetHeader,
+                               registry => undefined,
+                               standalone => standalone_p(Info)}) of
+    {Code, RespHeaders0, Body} ->
       ContentLength = integer_to_list(iolist_size(Body)),
       RespHeaders = RespHeaders0 ++ [{code, Code},
                                      {content_length, ContentLength}],
       {break, [{response, {response, RespHeaders, [Body]}}]};
-    _ ->
-      case standalone_p(Info) of
-        true ->
-          Body = prepare_index(Path),
-          {break, [{response, {200, Body}}]};
-        false ->
-          {proceed, Info#mod.data}
-      end
+    false ->
+      {proceed, Info#mod.data}
   end.
 
 %% ===================================================================
@@ -130,74 +98,3 @@ standalone_p(#mod{config_db = ConfigDb}) ->
       true;
     _ -> false
   end.
-
-prepare_index(Path) ->
-  FileName = filename:join([code:priv_dir(prometheus_httpd), "index.html"]),
-  {ok, Content} = file:read_file(FileName),
-  re:replace(Content, "M_E_T_R_I_C_S", Path, [global, {return, list}]).
-
-format_metrics(Accept, AcceptEncoding) ->
-  case negotiate_format(Accept) of
-    undefined ->
-      {406, [], <<>>};
-    Format ->
-      {ContentType, Scrape} = render_format(Format),
-      case negotiate_encoding(AcceptEncoding) of
-        undefined ->
-          {406, [], <<>>};
-        Encoding ->
-          encode_format(ContentType, binary_to_list(Encoding), Scrape)
-      end
-  end.
-
-negotiate_format(Accept) ->
-  case prometheus_httpd_config:format() of
-    auto ->
-      Alternatives = prometheus_httpd_config:allowed_formats(),
-      accept_header:negotiate(Accept, Alternatives);
-    undefined -> undefined;
-    Format0 -> Format0
-  end.
-
-negotiate_encoding(AcceptEncoding) ->
-  accept_encoding_header:negotiate(AcceptEncoding, [<<"gzip">>,
-                                                    <<"deflate">>,
-                                                    <<"identity">>]).
-
-render_format(Format) ->
-  Registry = default,
-  ContentType = Format:content_type(),
-
-  Scrape = prometheus_summary:observe_duration(
-             Registry,
-             ?SCRAPE_DURATION,
-             [Registry, ContentType],
-             fun () -> Format:format(Registry) end),
-  prometheus_summary:observe(Registry,
-                             ?SCRAPE_SIZE,
-                             [Registry, ContentType],
-                             iolist_size(Scrape)),
-  {ContentType, Scrape}.
-
-encode_format(ContentType, Encoding, Scrape) ->
-  Encoded = encode_format_(Encoding, Scrape),
-  Registry = default,
-  prometheus_summary:observe(Registry,
-                             ?SCRAPE_ENCODED_SIZE,
-                             [Registry, ContentType, Encoding],
-                             iolist_size(Encoded)),
-  {200, [{content_type, binary_to_list(ContentType)},
-         {content_encoding, Encoding}], Encoded}.
-
-encode_format_("gzip", Scrape) ->
-  zlib:gzip(Scrape);
-encode_format_("deflate", Scrape) ->
-  ZStream = zlib:open(),
-  zlib:deflateInit(ZStream),
-  try
-    zlib:deflate(ZStream, Scrape, finish)
-  after
-    zlib:deflateEnd(ZStream)
-  end;
-encode_format_("identity", Scrape) ->
-  Scrape.
