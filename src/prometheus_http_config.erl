@@ -107,8 +107,6 @@ validate_registry(undefined, auto) ->
   {true, default};
 validate_registry(Registry, auto) ->
   {true, Registry};
-validate_registry(Registry, undefined) ->
-  {true, Registry};
 validate_registry(Registry, Registry) ->
   {true, Registry};
 validate_registry(Asked, Conf) ->
