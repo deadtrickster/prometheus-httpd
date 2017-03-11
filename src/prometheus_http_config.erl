@@ -40,7 +40,7 @@ valid_path_and_registry(URI, RegistryO) ->
     undefined ->
       validate_registry(RegistryO, registry());
     Registry0 ->
-      case registry_exists(Registry0) of
+      case prometheus_registry:exists(Registry0) of
         false ->
           {registry_not_found, Registry0};
         Registry ->
@@ -146,20 +146,3 @@ call_with_basic_auth(Headers, Fun) ->
 parse_basic_encoded(Encoded) ->
   Params = base64:decode_to_string(Encoded),
   string:tokens(Params, ":").
-
-%% TODO: move to prometheus_registry
-
-registry_exists(Name) ->
-  First = ets:first(?PROMETHEUS_REGISTRY_TABLE),
-  registry_exists(First, iolist_to_binary(Name)).
-
-registry_exists('$end_of_table', _) ->
-  false;
-registry_exists(Registry, Name) ->
-  case atom_to_binary(Registry, utf8) of
-    Name ->
-      Registry;
-    _ ->
-      Next = ets:next(?PROMETHEUS_REGISTRY_TABLE, Registry),
-      registry_exists(Next, Name)
-  end.
