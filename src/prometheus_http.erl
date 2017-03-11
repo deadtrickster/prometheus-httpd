@@ -68,9 +68,9 @@ maybe_render_index(Standalone, Path, Headers) ->
     true ->
       case Path of
         "/favicon.ico" ->
+          %% https://www.iconfinder.com/icons/85652/fire_torch_icon#size=30
+          %% http://www.iconbeast.com/
           {200, [{"content-type", "image/png"}],
-           %% https://www.iconfinder.com/icons/85652/fire_torch_icon#size=30
-           %% http://www.iconbeast.com/
            base64:decode("iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAABaklEQ"
                          "VRIS+2UsU0EQQxF3+UElAASBUAHUAACKgACcqjg6AByAqACOFEAJU"
                          "ABBHRAQg760liaG+2u7QF0CROd9sb/+dsez+g7G8AzcAE89kjMeoK"

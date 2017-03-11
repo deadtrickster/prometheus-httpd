@@ -109,6 +109,10 @@ init_per_suite(Config) ->
                      ]),
   Config.
 
+end_per_testcase(_, Config) ->
+  application:set_env(prometheus, prometheus_http, []),
+  Config.
+
 %% ===================================================================
 %% TESTS
 %% ===================================================================
@@ -158,7 +162,21 @@ prometheus_httpd_negotiation(_Config) ->
                 {"content-length", ExpectedProtobufCL},
                 {"content-type", ExpectedProtobufCT}|_]
                when ExpectedProtobufCL > 0, headers(ProtobufResponse)),
+  ?assert(iolist_size(body(ProtobufResponse)) > 0),
+
+  application:set_env(prometheus, prometheus_http,
+                      [{format, prometheus_protobuf_format}]),
+  {ok, ProtobufResponse1} =
+    httpc:request(get, {"http://localhost:8081/metrics", []}, [], []),
+  ?assertMatch(200, status(ProtobufResponse1)),
+  ProtobufCT = prometheus_protobuf_format:content_type(),
+  ExpectedProtobufCT = binary_to_list(ProtobufCT),
+  ?assertMatch([{"content-encoding", "gzip"},
+                {"content-length", ExpectedProtobufCL1},
+                {"content-type", ExpectedProtobufCT}|_]
+               when ExpectedProtobufCL1 > 0, headers(ProtobufResponse1)),
   ?assert(iolist_size(body(ProtobufResponse)) > 0).
+
 
 prometheus_httpd_negotiation_fail(_Config) ->
   {ok, IdentityResponse} =
@@ -253,13 +271,13 @@ prometheus_httpd_registry_conflict(_Config) ->
 
 prometheus_httpd_auth_basic1(_Config) ->
   application:set_env(prometheus, prometheus_http, [{authorization,
-                                                      {basic, "qwe", "qwa"}}]),
+                                                     {basic, "qwe", "qwa"}}]),
 
   ?AUTH_TESTS.
 
 prometheus_httpd_auth_basic2(_Config) ->
   application:set_env(prometheus, prometheus_http, [{authorization,
-                                                      {basic, ?MODULE}}]),
+                                                     {basic, ?MODULE}}]),
 
   ?AUTH_TESTS.
 
