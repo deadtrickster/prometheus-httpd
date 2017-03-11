@@ -4,6 +4,7 @@ defmodule PrometheusHTTPD.Mixfile do
   def project do
     [app: :prometheus_httpd,
      version: "1.1.0",
+     deps: deps(),
      description: description(),
      package: package()]
   end
@@ -27,5 +28,10 @@ defmodule PrometheusHTTPD.Mixfile do
               "Plugs Instrumenter/Exporter" => "https://hex.pm/packages/prometheus_plugs",
               "Process info Collector" => "https://hex.pm/packages/prometheus_process_collector"},
      files: ["priv", "src", "README.md", "rebar.config"]]
+  end
+
+  defp deps do
+    [{:prometheus, "~> 3.2"},
+     {:accept, "~> 0.3.0"}]
   end
 end
