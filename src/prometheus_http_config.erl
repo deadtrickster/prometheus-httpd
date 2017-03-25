@@ -112,6 +112,8 @@ validate_registry(Registry, Registry) ->
 validate_registry(Asked, Conf) ->
   {registry_conflict, Asked, Conf}.
 
+try_match_path(_, true) ->
+  undefined;
 try_match_path(Path, Path) ->
   undefined;
 try_match_path(Path, URI) ->
