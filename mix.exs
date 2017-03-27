@@ -3,7 +3,7 @@ defmodule PrometheusHTTPD.Mixfile do
 
   def project do
     [app: :prometheus_httpd,
-     version: "1.1.0",
+     version: "1.1.1",
      deps: deps(),
      description: description(),
      package: package()]
