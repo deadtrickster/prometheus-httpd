@@ -22,6 +22,7 @@ defmodule PrometheusHTTPD.Mixfile do
      links: %{"GitHub" => "https://github.com/deadtrickster/prometheus_httpd",
               "Prometheus.erl" => "https://hex.pm/packages/prometheus",
               "Prometheus.ex" => "https://hex.pm/packages/prometheus_ex",
+              "Pushgateway client" => "https://hex.pm/packages/prometheus_push",
               "Dashboards" => "https://github.com/deadtrickster/beam-dashboards",
               "Ecto Instrumenter" => "https://hex.pm/packages/prometheus_ecto",
               "Phoenix Instrumenter" => "https://hex.pm/packages/prometheus_phoenix",

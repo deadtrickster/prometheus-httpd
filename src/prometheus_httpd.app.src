@@ -18,6 +18,7 @@
            {"Beam Dashboards", "https://github.com/deadtrickster/beam-dashboards"},
            {"Prometheus", "https://hex.pm/packages/prometheus"},
            {"Prometheus.ex", "https://hex.pm/packages/prometheus_ex"},
+           {"Pushgateway client", "https://hex.pm/packages/prometheus_push"},
            {"Ecto Instrumenter", "https://hex.pm/packages/prometheus_ecto"},
            {"Phoenix Instrumenter", "https://hex.pm/packages/prometheus_phoenix"},
            {"Plugs Instrumenter/Exporter", "https://hex.pm/packages/prometheus_plugs"},
