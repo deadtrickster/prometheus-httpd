@@ -122,11 +122,11 @@ prometheus_httpd_standalone(_Config) ->
   ?assertMatch(200, status(MetricsResponse)),
   MetricsCT = prometheus_text_format:content_type(),
   ExpecteMetricsCT = binary_to_list(MetricsCT),
-  ?assertMatch([{"content-encoding", "gzip"},
+  ?assertMatch([{"content-encoding", "identity"},
                 {"content-length", ExpectedMetricsCL},
                 {"content-type", ExpecteMetricsCT}|_]
                when ExpectedMetricsCL > 0, headers(MetricsResponse)),
-  MetricsBody = zlib:gunzip(body(MetricsResponse)),
+  MetricsBody = body(MetricsResponse),
   ?assertMatch(true, all_telemetry_metrics_present(MetricsBody)),
 
   {ok, HTMLResponse} = httpc:request("http://localhost:8081/random_path"),
@@ -154,15 +154,15 @@ prometheus_httpd_negotiation(_Config) ->
   {ok, ProtobufResponse} =
     httpc:request(get, {"http://localhost:8081/metrics",
                         [{"Accept", ?PROMETHEUS_ACCEPT},
-                         {"Accept-Encoding", "identity, sdch"}]}, [], []),
+                         {"Accept-Encoding", "gzip, sdch"}]}, [], []),
   ?assertMatch(200, status(ProtobufResponse)),
   ProtobufCT = prometheus_protobuf_format:content_type(),
   ExpectedProtobufCT = binary_to_list(ProtobufCT),
-  ?assertMatch([{"content-encoding", "identity"},
+  ?assertMatch([{"content-encoding", "gzip"},
                 {"content-length", ExpectedProtobufCL},
                 {"content-type", ExpectedProtobufCT}|_]
                when ExpectedProtobufCL > 0, headers(ProtobufResponse)),
-  ?assert(iolist_size(body(ProtobufResponse)) > 0),
+  ?assert(iolist_size(zlib:gunzip(body(ProtobufResponse))) > 0),
 
   application:set_env(prometheus, prometheus_http,
                       [{format, prometheus_protobuf_format}]),
@@ -171,7 +171,7 @@ prometheus_httpd_negotiation(_Config) ->
   ?assertMatch(200, status(ProtobufResponse1)),
   ProtobufCT = prometheus_protobuf_format:content_type(),
   ExpectedProtobufCT = binary_to_list(ProtobufCT),
-  ?assertMatch([{"content-encoding", "gzip"},
+  ?assertMatch([{"content-encoding", "identity"},
                 {"content-length", ExpectedProtobufCL1},
                 {"content-type", ExpectedProtobufCT}|_]
                when ExpectedProtobufCL1 > 0, headers(ProtobufResponse1)),
@@ -210,11 +210,11 @@ prometheus_httpd_mod(_Config) ->
   ?assertMatch(200, status(MetricsResponse)),
   MetricsCT = prometheus_text_format:content_type(),
   ExpecteMetricsCT = binary_to_list(MetricsCT),
-  ?assertMatch([{"content-encoding", "gzip"},
+  ?assertMatch([{"content-encoding", "identity"},
                 {"content-length", ExpectedMetricsCL},
                 {"content-type", ExpecteMetricsCT}|_]
                when ExpectedMetricsCL > 0, headers(MetricsResponse)),
-  MetricsBody = zlib:gunzip(body(MetricsResponse)),
+  MetricsBody = body(MetricsResponse),
   ?assertMatch(true, all_telemetry_metrics_present(MetricsBody)),
 
   {ok, HTMLResponse} = httpc:request("http://localhost:8082/index.html"),
@@ -242,11 +242,11 @@ prometheus_httpd_registry(_Config) ->
   ?assertMatch(200, status(MetricsResponse)),
   MetricsCT = prometheus_text_format:content_type(),
   ExpecteMetricsCT = binary_to_list(MetricsCT),
-  ?assertMatch([{"content-encoding", "gzip"},
+  ?assertMatch([{"content-encoding", "identity"},
                 {"content-length", ExpectedMetricsCL},
                 {"content-type", ExpecteMetricsCT}|_]
                when ExpectedMetricsCL > 0, headers(MetricsResponse)),
-  MetricsBody = zlib:gunzip(body(MetricsResponse)),
+  MetricsBody = body(MetricsResponse),
   ?assertMatch(false, all_telemetry_metrics_present(MetricsBody)),
   ?assertMatch({match, _}, re:run(MetricsBody, "# TYPE qwe counter")),
 
