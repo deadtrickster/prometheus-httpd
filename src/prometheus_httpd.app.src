@@ -6,7 +6,8 @@
    [kernel,
     stdlib,
     inets,
-    prometheus
+    prometheus,
+    accept
    ]},
   {env,[]},
   {modules, []},
