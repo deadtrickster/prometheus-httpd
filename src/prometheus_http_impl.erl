@@ -1,4 +1,4 @@
--module(prometheus_http).
+-module(prometheus_http_impl).
 
 -export([reply/1,
          setup/0]).

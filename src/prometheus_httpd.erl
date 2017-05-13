@@ -52,10 +52,10 @@
 
 %% @doc
 %% Starts inets httpd server with `promtheus_httpd' module enabled.
-%% Also calls `prometheus_http:setup/0'.
+%% Also calls `prometheus_http_impl:setup/0'.
 %% @end
 start() ->
-  prometheus_http:setup(),
+  prometheus_http_impl:setup(),
   inets:start(httpd, [
                       {modules, [
                                  prometheus_httpd
@@ -75,7 +75,7 @@ do(Info) ->
               end,
 
   %% TODO: check method, response only to GET
-  case prometheus_http:reply(#{path => URI,
+  case prometheus_http_impl:reply(#{path => URI,
                                headers => GetHeader,
                                registry => undefined,
                                standalone => standalone_p(Info)}) of
