@@ -1,3 +1,3 @@
 #!/bin/sh
 
-rebar3 do elvis, xref, dialyzer, ct
+rebar3 as test do elvis, xref, dialyzer, ct

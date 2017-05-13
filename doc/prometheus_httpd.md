@@ -53,24 +53,13 @@ Default configuration:
 ## Function Index ##
 
 
-<table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#setup-0">setup/0</a></td><td>
-Initializes telemetry metrics.</td></tr><tr><td valign="top"><a href="#start-0">start/0</a></td><td>
+<table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#start-0">start/0</a></td><td>
 Starts inets httpd server with <code>promtheus_httpd</code> module enabled.</td></tr></table>
 
 
 <a name="functions"></a>
 
 ## Function Details ##
-
-<a name="setup-0"></a>
-
-### setup/0 ###
-
-`setup() -> any()`
-
-Initializes telemetry metrics.<br />
-*NOTE:* If you plug `prometheus_httpd` in your existing httpd instance,
-you have to call this function manually.
 
 <a name="start-0"></a>
 
@@ -79,5 +68,5 @@ you have to call this function manually.
 `start() -> any()`
 
 Starts inets httpd server with `promtheus_httpd` module enabled.
-Also calls [`setup()`](#setup-0).
+Also calls `prometheus_http_impl:setup/0`.
 
