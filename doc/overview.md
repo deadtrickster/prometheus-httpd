@@ -1,6 +1,6 @@
 @copyright 2017 Ilya Khaprov <<i.khaprov@gmail.com>>.
 @title Prometheus.io inets httpd exporter
-@version 2.0.1
+@version 2.1.0
 
 @doc
 
