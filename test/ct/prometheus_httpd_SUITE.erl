@@ -113,6 +113,12 @@ end_per_testcase(_, Config) ->
   application:set_env(prometheus, prometheus_http, []),
   Config.
 
+%% @doc Stop the application.
+end_per_suite(Config) ->
+  ok = application:stop(inets),
+  ok = application:stop(prometheus),
+  Config.
+
 %% ===================================================================
 %% TESTS
 %% ===================================================================
