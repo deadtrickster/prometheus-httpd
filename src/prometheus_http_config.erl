@@ -131,20 +131,21 @@ get_value(Key, Default) -> proplists:get_value(Key, config(), Default).
 config() -> application:get_env(prometheus, prometheus_http, ?DEFAULT_CONFIG).
 
 call_with_basic_auth(Headers, Fun) ->
-  case Headers("authorization", undefined) of
-    undefined ->
-      false;
-    "Basic " ++ Encoded ->
-      case parse_basic_encoded(Encoded) of
-        [Login, Password] ->
-          Fun(Login, Password);
-        _ ->
-          false
-      end;
+  Authorization =  Headers("authorization", undefined),
+  call_with_basic_auth_(Authorization, Fun).
+
+call_with_basic_auth_("Basic " ++ Encoded, Fun) ->
+  call_with_basic_auth__(Encoded, Fun);
+call_with_basic_auth_(<<"Basic ", Encoded/binary>>, Fun) ->
+  call_with_basic_auth__(Encoded, Fun);
+call_with_basic_auth_(_Authorization, _Fun) ->
+  false.
+
+call_with_basic_auth__(Encoded, Fun) ->
+  Params = base64:decode_to_string(Encoded),
+  case string:tokens(Params, ":") of
+    [Login, Password] ->
+      Fun(Login, Password);
     _ ->
       false
   end.
-
-parse_basic_encoded(Encoded) ->
-  Params = base64:decode_to_string(Encoded),
-  string:tokens(Params, ":").
