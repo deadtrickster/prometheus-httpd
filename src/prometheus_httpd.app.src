@@ -11,6 +11,7 @@
    ]},
   {env,[]},
   {modules, []},
+  {mod, {prometheus_httpd, []}},
 
   {description, "Expose Prometheus metrics using inets httpd."},
   {maintainers, ["Ilya Khaprov"]},

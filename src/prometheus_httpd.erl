@@ -46,6 +46,11 @@
 
 -define(SERVER_NAME, "Prometheus.io metrics.").
 
+-behaviour(application).
+-export([start/2, stop/1]).
+-behaviour(supervisor).
+-export([init/1]).
+
 %% ===================================================================
 %% Public API
 %% ===================================================================
@@ -55,7 +60,6 @@
 %% Also calls `prometheus_http_impl:setup/0'.
 %% @end
 start() ->
-  prometheus_http_impl:setup(),
   inets:start(httpd, [
                       {modules, [
                                  prometheus_httpd
@@ -87,6 +91,20 @@ do(Info) ->
     false ->
       {proceed, Info#mod.data}
   end.
+
+%% ===================================================================
+%% Application & supervisor callbacks
+%% ===================================================================
+
+start(_, _) ->
+  prometheus_http_impl:setup(),
+  supervisor:start_link({local, ?MODULE}, ?MODULE, []).
+
+stop(_) -> ok.
+
+init([]) ->
+  {ok, {{one_for_one, 0, 1}, []}}.
+
 
 %% ===================================================================
 %% Private Parts
