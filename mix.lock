@@ -1,0 +1,2 @@
+%{"accept": {:hex, :accept, "0.3.3", "548ebb6fb2e8b0d170e75bb6123aea6ceecb0189bb1231eeadf52eac08384a97", [:rebar3], []},
+  "prometheus": {:hex, :prometheus, "3.3.1", "bc680e9d7aa53cbc1b554093968718d25ba264cd936840b24278e1cb77b97225", [:mix, :rebar3], []}}

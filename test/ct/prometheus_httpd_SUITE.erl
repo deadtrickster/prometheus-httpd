@@ -88,7 +88,6 @@ groups() ->
 
 %% @doc Start the application.
 init_per_suite(Config) ->
-  {ok, _} = application:ensure_all_started(inets),
   {ok, _} = application:ensure_all_started(prometheus_httpd),
   prometheus_httpd:start(),
 

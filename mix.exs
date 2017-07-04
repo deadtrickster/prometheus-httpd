@@ -15,6 +15,15 @@ defmodule PrometheusHTTPD.Mixfile do
     """
   end
 
+  def application do
+    [applications: [:kernel,
+                    :stdlib,
+                    :inets,
+                    :prometheus,
+                    :accept],
+     mod: {:prometheus_httpd, []}]
+  end
+
   defp package do
     [build_tools: ["rebar3"],
      maintainers: ["Ilya Khaprov"],
