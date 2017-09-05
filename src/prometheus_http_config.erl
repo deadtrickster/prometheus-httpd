@@ -59,7 +59,7 @@ allowed_formats() ->
   [{prometheus_text_format:content_type(), prometheus_text_format},
    {prometheus_protobuf_format:content_type(), prometheus_protobuf_format}].
 
-port() -> get_value(port, ?DEFAULT_FORMAT).
+port() -> get_value(port, ?DEFAULT_PORT).
 
 authorization() ->
   case get_value(authorization, ?DEFAULT_AUTHORIZATION) of
