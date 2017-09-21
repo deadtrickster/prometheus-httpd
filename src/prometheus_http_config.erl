@@ -10,6 +10,8 @@
          port/0,
          authorization/0]).
 
+-include("prometheus_http.hrl").
+
 %% TODO: remove
 -define(PROMETHEUS_REGISTRY_TABLE, prometheus_registry_table).
 
@@ -68,7 +70,7 @@ authorization() ->
           true
       end;
     {basic, Login, Password} ->
-      fun(#{headers := Headers}) ->
+      fun(#request{headers = Headers}) ->
           call_with_basic_auth(Headers,
                                fun(Login1, Password1) ->
                                    case {Login1, Password1} of
@@ -81,12 +83,12 @@ authorization() ->
       end;
     {basic, {Module, Fun}}
       when is_atom(Module) andalso is_atom(Fun) ->
-      fun (#{headers := Headers}) ->
+      fun (#request{headers = Headers}) ->
           call_with_basic_auth(Headers,
                                fun Module:Fun/2)
       end;
     {basic, Module} when is_atom(Module)->
-      fun (#{headers := Headers}) ->
+      fun (#request{headers = Headers}) ->
           call_with_basic_auth(Headers,
                                fun Module:authorize/2)
       end;
@@ -135,13 +137,13 @@ call_with_basic_auth(Headers, Fun) ->
   call_with_basic_auth_(Authorization, Fun).
 
 call_with_basic_auth_("Basic " ++ Encoded, Fun) ->
-  call_with_basic_auth__(Encoded, Fun);
+  call_with_basic_auth_i(Encoded, Fun);
 call_with_basic_auth_(<<"Basic ", Encoded/binary>>, Fun) ->
-  call_with_basic_auth__(Encoded, Fun);
+  call_with_basic_auth_i(Encoded, Fun);
 call_with_basic_auth_(_Authorization, _Fun) ->
   false.
 
-call_with_basic_auth__(Encoded, Fun) ->
+call_with_basic_auth_i(Encoded, Fun) ->
   Params = base64:decode_to_string(Encoded),
   case string:tokens(Params, ":") of
     [Login, Password] ->

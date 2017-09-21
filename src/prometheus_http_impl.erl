@@ -1,5 +1,7 @@
 -module(prometheus_http_impl).
 
+-include("prometheus_http.hrl").
+
 -export([reply/1,
          setup/0]).
 
@@ -10,14 +12,13 @@
 %% @doc
 %% Render metrics
 %% @end
-reply(#{path := Path,
-        headers := Headers,
-        registry := Registry,
-        standalone := Standalone}) ->
+reply(#request{path = Path,
+               headers = Headers,
+               registry = Registry} = Request) ->
 
   case prometheus_http_config:valid_path_and_registry(Path, Registry) of
     {true, RealRegistry} ->
-      if_authorized(Path, Headers,
+      if_authorized(Request,
                     fun () ->
                         format_metrics(Headers, RealRegistry)
                     end);
@@ -26,7 +27,7 @@ reply(#{path := Path,
     {registry_not_found, _ReqR} ->
       {404, [], <<>>};
     false ->
-      maybe_render_index(Standalone, Path, Headers)
+      maybe_render_index(Request)
   end.
 
 %% @doc
@@ -63,7 +64,8 @@ format_metrics(Headers, Registry) ->
   AcceptEncoding = Headers("accept-encoding", undefined),
   format_metrics(Accept, AcceptEncoding, Registry).
 
-maybe_render_index(Standalone, Path, Headers) ->
+maybe_render_index(#request{path = Path,
+                            standalone = Standalone} = Request) ->
   case Standalone of
     true ->
       case Path of
@@ -84,7 +86,7 @@ maybe_render_index(Standalone, Path, Headers) ->
                          "vfrgozHx5iraMAAAAASUVORK5CYII=")};
         _ ->
           MetricsPath = prometheus_http_config:path(),
-          if_authorized(Path, Headers,
+          if_authorized(Request,
                         fun () ->
                             {200, [], prepare_index(MetricsPath)}
                         end)
@@ -93,13 +95,12 @@ maybe_render_index(Standalone, Path, Headers) ->
       false
   end.
 
-if_authorized(URI, Headers, Fun) ->
+if_authorized(Request, Fun) ->
   case prometheus_http_config:authorization() of
     {invalid_authorize, _} ->
       {500, [], <<>>};
     Auth ->
-      case Auth(#{uri => URI,
-                  headers => Headers}) of
+      case Auth(Request) of
         true ->
           Fun();
         false ->

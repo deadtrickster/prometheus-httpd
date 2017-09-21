@@ -2,6 +2,7 @@
 -compile(export_all).
 -include_lib("common_test/include/ct.hrl").
 -include_lib("eunit/include/eunit.hrl").
+-include("prometheus_http.hrl").
 
 %% ===================================================================
 %% MACROS
@@ -322,7 +323,7 @@ authorize("qwe", "qwa") ->
 authorize(_, _) ->
   false.
 
-authorize(#{headers := Headers}) ->
+authorize(#request{headers = Headers}) ->
   case Headers("authorization", undefined) of
     undefined ->
       false;

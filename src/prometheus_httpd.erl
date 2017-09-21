@@ -43,6 +43,7 @@
 -export([do/1]).
 
 -include_lib("inets/include/httpd.hrl").
+-include("prometheus_http.hrl").
 
 -define(SERVER_NAME, "Prometheus.io metrics.").
 
@@ -79,10 +80,10 @@ do(Info) ->
               end,
 
   %% TODO: check method, response only to GET
-  case prometheus_http_impl:reply(#{path => URI,
-                               headers => GetHeader,
-                               registry => undefined,
-                               standalone => standalone_p(Info)}) of
+  case prometheus_http_impl:reply(#request{path = URI,
+                                           headers = GetHeader,
+                                           registry = undefined,
+                                           standalone = standalone_p(Info)}) of
     {Code, RespHeaders0, Body} ->
       ContentLength = integer_to_list(iolist_size(Body)),
       RespHeaders = RespHeaders0 ++ [{code, Code},
