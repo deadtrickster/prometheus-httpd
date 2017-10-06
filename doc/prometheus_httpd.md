@@ -37,16 +37,16 @@ __Behaviours:__ [`application`](application.md), [`supervisor`](supervisor.md).
 - `telemetry_scrape_encoded_size_bytes`
 
 ### Configuration
-Can be configured via `prometheus_httpd` key of `prometheus` app env.<br />
+Can be configured via `prometheus_http` key of `prometheus` app env.<br />
 Default configuration:
 
 ```erlang
 
   {prometheus, [
     ...
-    {prometheus_httpd, [{path, "/metrics"},
-                        {format, auto},
-                        {port, 8081}]},
+    {prometheus_http, [{path, "/metrics"},
+                       {format, auto},
+                       {port, 8081}]},
     ...
     ]}
 ```
