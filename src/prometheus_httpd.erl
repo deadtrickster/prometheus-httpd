@@ -22,14 +22,14 @@
 %% - `telemetry_scrape_encoded_size_bytes'
 %%
 %% ### Configuration
-%% Can be configured via `prometheus_httpd' key of `prometheus' app env.<br/>
+%% Can be configured via `prometheus_http' key of `prometheus' app env.<br/>
 %% Default configuration:
 %% <pre lang="erlang">
 %% {prometheus, [
 %%   ...
-%%   {prometheus_httpd, [{path, "/metrics"},
-%%                       {format, auto},
-%%                       {port, 8081}]},
+%%   {prometheus_http, [{path, "/metrics"},
+%%                      {format, auto},
+%%                      {port, 8081}]},
 %%   ...
 %%   ]}
 %% </pre>
