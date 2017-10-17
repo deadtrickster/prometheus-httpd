@@ -106,7 +106,7 @@ init_per_suite(Config) ->
                                     {"js", "application/x-javascript"}
                                    ]}
                      ]),
-  Config.
+  [{metrics_port, 8081}, {metrics_path, "metrics"} | Config].
 
 end_per_testcase(_, Config) ->
   application:set_env(prometheus, prometheus_http, []),
@@ -122,17 +122,8 @@ end_per_suite(Config) ->
 %% TESTS
 %% ===================================================================
 
-prometheus_httpd_standalone(_Config) ->
-  {ok, MetricsResponse} = httpc:request("http://localhost:8081/metrics"),
-  ?assertMatch(200, status(MetricsResponse)),
-  MetricsCT = prometheus_text_format:content_type(),
-  ExpecteMetricsCT = binary_to_list(MetricsCT),
-  ?assertMatch([{"content-encoding", "identity"},
-                {"content-length", ExpectedMetricsCL},
-                {"content-type", ExpecteMetricsCT}|_]
-               when ExpectedMetricsCL > 0, headers(MetricsResponse)),
-  MetricsBody = body(MetricsResponse),
-  ?assertMatch(true, all_telemetry_metrics_present(MetricsBody)),
+prometheus_httpd_standalone(Config) ->
+  prometheus_httpd_ct:self_test(Config),
 
   {ok, HTMLResponse} = httpc:request("http://localhost:8081/random_path"),
   ?assertMatch(200, status(HTMLResponse)),
