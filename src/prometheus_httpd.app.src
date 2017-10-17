@@ -17,6 +17,7 @@
   {maintainers, ["Ilya Khaprov"]},
   {licenses, ["MIT"]},
   {links, [{"Github", "https://github.com/deadtrickster/prometheus.erl"},
+           {"Hex.pm", "https://hex.pm/packages/prometheus_httpd"},
            {"Beam Dashboards", "https://github.com/deadtrickster/beam-dashboards"},
            {"Prometheus", "https://hex.pm/packages/prometheus"},
            {"Prometheus.ex", "https://hex.pm/packages/prometheus_ex"},
