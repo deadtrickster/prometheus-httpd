@@ -4,7 +4,7 @@
 
 Copyright (c) 2017 Ilya Khaprov <<i.khaprov@gmail.com>>.
 
-__Version:__ 2.1.4
+__Version:__ 2.1.5
 
 [![Hex.pm](https://img.shields.io/hexpm/v/prometheus_httpd.svg?maxAge=2592000?style=plastic)](https://hex.pm/packages/prometheus_httpd)
 [![Hex.pm](https://img.shields.io/hexpm/dt/prometheus_httpd.svg?maxAge=2592000)](https://hex.pm/packages/prometheus_httpd)
@@ -58,5 +58,6 @@ MIT
 
 <table width="100%" border="0" summary="list of modules">
 <tr><td><a href="https://github.com/deadtrickster/prometheus_httpd/blob/master/doc/prometheus_http_impl.md" class="module">prometheus_http_impl</a></td></tr>
-<tr><td><a href="https://github.com/deadtrickster/prometheus_httpd/blob/master/doc/prometheus_httpd.md" class="module">prometheus_httpd</a></td></tr></table>
+<tr><td><a href="https://github.com/deadtrickster/prometheus_httpd/blob/master/doc/prometheus_httpd.md" class="module">prometheus_httpd</a></td></tr>
+<tr><td><a href="https://github.com/deadtrickster/prometheus_httpd/blob/master/doc/prometheus_httpd_ct.md" class="module">prometheus_httpd_ct</a></td></tr></table>
 
