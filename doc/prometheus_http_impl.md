@@ -22,7 +22,7 @@ Initializes telemetry metrics.</td></tr></table>
 
 ### reply/1 ###
 
-`reply(Request) -> any()`
+`reply(X1) -> any()`
 
 Render metrics
 
