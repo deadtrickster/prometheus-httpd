@@ -4,7 +4,7 @@
 
 Copyright (c) 2017 Ilya Khaprov <<i.khaprov@gmail.com>>.
 
-__Version:__ 2.1.6
+__Version:__ 2.1.7
 
 [![Hex.pm](https://img.shields.io/hexpm/v/prometheus_httpd.svg?maxAge=2592000?style=plastic)](https://hex.pm/packages/prometheus_httpd)
 [![Hex.pm](https://img.shields.io/hexpm/dt/prometheus_httpd.svg?maxAge=2592000)](https://hex.pm/packages/prometheus_httpd)
@@ -21,9 +21,7 @@ Also can start its own httpd instance with just `prometheus_httpd` enabled.
 prometheus_httpd:start()
 ```
 
-More in `prometheus_httpd` module [documentation](https://github.com/deadtrickster/prometheus-httpd/blob/master/doc/prometheus_httpd.md).
-
-Cowboy integration example: [prometheus-cowboy](https://github.com/deadtrickster/prometheus-cowboy).
+More in `prometheus_httpd` module [documentation](/deadtrickster/prometheus_httpd/blob/master/doc/prometheus_httpd.md)
 
 ![BEAM Dashboard](https://raw.githubusercontent.com/deadtrickster/beam-dashboards/master/BEAM.png)
 
