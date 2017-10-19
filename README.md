@@ -21,7 +21,9 @@ Also can start its own httpd instance with just `prometheus_httpd` enabled.
 prometheus_httpd:start()
 ```
 
-More in `prometheus_httpd` module [documentation](https://github.com/deadtrickster/prometheus-httpd/blob/master/doc/prometheus_httpd.md)
+More in `prometheus_httpd` module [documentation](https://github.com/deadtrickster/prometheus-httpd/blob/master/doc/prometheus_httpd.md).
+
+Cowboy integration example: [prometheus-cowboy](https://github.com/deadtrickster/prometheus-cowboy).
 
 ![BEAM Dashboard](https://raw.githubusercontent.com/deadtrickster/beam-dashboards/master/BEAM.png)
 
