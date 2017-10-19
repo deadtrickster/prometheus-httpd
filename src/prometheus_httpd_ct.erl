@@ -9,6 +9,7 @@
 -module(prometheus_httpd_ct).
 
 -export([self_test/1]).
+-export([self_test/2]).
 
 -include_lib("common_test/include/ct.hrl").
 -include_lib("eunit/include/eunit.hrl").
@@ -28,8 +29,12 @@
 %% ===================================================================
 
 self_test(Config) ->
-  Path = normalize_path(?config(metrics_path, Config)),
+  Path = ?config(metrics_path, Config),
   Port = ?config(metrics_port, Config),
+  self_test(Port, Path).
+
+self_test(Port, Path0) ->
+  Path = normalize_path(Path0),
   URL = format_to_string("http://localhost:~p/~s", [Port, Path]),
   {ok, MetricsResponse} = httpc:request(URL),
   ?assertMatch(200, status(MetricsResponse)),
