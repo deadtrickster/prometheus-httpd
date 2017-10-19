@@ -37,7 +37,7 @@ defmodule PrometheusHTTPD.Mixfile do
               "Phoenix Instrumenter" => "https://hex.pm/packages/prometheus_phoenix",
               "Plugs Instrumenter/Exporter" => "https://hex.pm/packages/prometheus_plugs",
               "Process info Collector" => "https://hex.pm/packages/prometheus_process_collector"},
-     files: ["priv", "src", "README.md", "rebar.config"]]
+     files: ["priv", "src", "lib", "README.md", "rebar.config"]]
   end
 
   defp deps do
