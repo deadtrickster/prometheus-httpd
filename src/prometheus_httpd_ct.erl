@@ -28,10 +28,10 @@
 %% ===================================================================
 
 self_test(Config) ->
-  {ok, MetricsResponse} = httpc:request(lists:flatten(
-                                          io_lib:format("http://localhost:~p/~s",
-                                                        [?config(metrics_port, Config),
-                                                         ?config(metrics_path, Config)]))),
+  Path = normalize_path(?config(metrics_path, Config)),
+  Port = ?config(metrics_port, Config),
+  URL = format_to_string("http://localhost:~p/~s", [Port, Path]),
+  {ok, MetricsResponse} = httpc:request(URL),
   ?assertMatch(200, status(MetricsResponse)),
   MetricsCT = prometheus_text_format:content_type(),
   ExpectedMetricsCT = binary_to_list(MetricsCT),
@@ -61,3 +61,15 @@ body({_, _, Body}) ->
 
 headers({_, Headers, _}) ->
   lists:sort(Headers).
+
+normalize_path([$/| Rest]) ->
+  Rest;
+normalize_path(<<"/", Rest/binary>>) ->
+  Rest;
+normalize_path(Path) ->
+  Path.
+
+format_to_string(Format, Args) ->
+  binary_to_list(
+    iolist_to_binary(
+      io_lib:format(Format, Args))).

@@ -124,6 +124,8 @@ end_per_suite(Config) ->
 
 prometheus_httpd_standalone(Config) ->
   prometheus_httpd_ct:self_test(Config),
+  prometheus_httpd_ct:self_test([{metrics_port, 8081}, {metrics_path, <<"metrics">>}]),
+  prometheus_httpd_ct:self_test([{metrics_port, 8081}, {metrics_path, <<"/metrics">>}]),
 
   {ok, HTMLResponse} = httpc:request("http://localhost:8081/random_path"),
   ?assertMatch(200, status(HTMLResponse)),
