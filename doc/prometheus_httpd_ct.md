@@ -19,7 +19,7 @@ Function assumes localhost.<a name="index"></a>
 ## Function Index ##
 
 
-<table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#self_test-1">self_test/1</a></td><td></td></tr></table>
+<table width="100%" border="1" cellspacing="0" cellpadding="2" summary="function index"><tr><td valign="top"><a href="#self_test-1">self_test/1</a></td><td></td></tr><tr><td valign="top"><a href="#self_test-2">self_test/2</a></td><td></td></tr></table>
 
 
 <a name="functions"></a>
@@ -31,4 +31,10 @@ Function assumes localhost.<a name="index"></a>
 ### self_test/1 ###
 
 `self_test(Config) -> any()`
+
+<a name="self_test-2"></a>
+
+### self_test/2 ###
+
+`self_test(Port, Path0) -> any()`
 
