@@ -41,7 +41,7 @@ defmodule PrometheusHTTPD.Mixfile do
   end
 
   defp deps do
-    [{:prometheus, "~> 3.4"},
-     {:accept, "~> 0.3.3"}]
+    [{:prometheus, "~> 3.5 or ~> 4.2"},
+     {:accept, "~> 0.3"}]
   end
 end
