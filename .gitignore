@@ -18,3 +18,5 @@ erl_crash.dump
 logs
 _build
 deps
+rebar.lock
+*.ez
