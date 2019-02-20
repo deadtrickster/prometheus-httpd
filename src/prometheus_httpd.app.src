@@ -1,6 +1,6 @@
 {application, prometheus_httpd,
  [{description, "Prometheus.io inets httpd exporter"},
-  {vsn, "2.1.10"},
+  {vsn, "2.1.11"},
   {registered, []},
   {applications,
    [kernel,
