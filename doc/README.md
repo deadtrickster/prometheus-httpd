@@ -4,7 +4,7 @@
 
 Copyright (c) 2017 Ilya Khaprov <<i.khaprov@gmail.com>>.
 
-__Version:__ 2.1.9
+__Version:__ 2.1.10
 
 [![Hex.pm](https://img.shields.io/hexpm/v/prometheus_httpd.svg?maxAge=2592000?style=plastic)](https://hex.pm/packages/prometheus_httpd)
 [![Hex.pm](https://img.shields.io/hexpm/dt/prometheus_httpd.svg?maxAge=2592000)](https://hex.pm/packages/prometheus_httpd)
